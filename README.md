@@ -263,3 +263,8 @@ mx-console-suite/
 ## License
 
 MIT — see [LICENSE](./LICENSE).
+
+---
+
+If you find this useful, you can support the work here:
+[☕ Buy me a coffee](https://buymeacoffee.com/monishmeher)
