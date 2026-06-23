@@ -1,0 +1,9 @@
+{
+  "name": "mx-console-launcher",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Home-screen launcher for the MX Creative Console: time/date tiles + app tiles.",
+  "scripts": { "start": "node launcher.js", "preview": "node launcher.js --preview" },
+  "dependencies": { "@logitech-mx-creative-console/node": "^0.2.3", "sharp": "^0.33.5" }
+}

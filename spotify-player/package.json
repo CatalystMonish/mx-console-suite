@@ -1,0 +1,9 @@
+{
+  "name": "mx-console-spotify",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Mirror the macOS Spotify app onto the MX Creative Console with an album-art ambilight.",
+  "scripts": { "start": "node spotify.js" },
+  "dependencies": { "@logitech-mx-creative-console/node": "^0.2.3", "sharp": "^0.33.5" }
+}

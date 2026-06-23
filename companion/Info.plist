@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>MX Console Companion</string>
+	<key>CFBundleDisplayName</key>
+	<string>MX Console Companion</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.mxconsole.companion</string>
+	<key>CFBundleExecutable</key>
+	<string>MXConsoleCompanion</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>MX Console controls the Spotify app to show what's playing and handle playback from the console.</string>
+</dict>
+</plist>

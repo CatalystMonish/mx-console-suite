@@ -1,0 +1,9 @@
+{
+  "name": "mx-console-vitals",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "System vitals (CPU, memory, disk, network, battery) on the MX Creative Console.",
+  "scripts": { "start": "node vitals.js", "preview": "node vitals.js --preview" },
+  "dependencies": { "@logitech-mx-creative-console/node": "^0.2.3", "sharp": "^0.33.5" }
+}

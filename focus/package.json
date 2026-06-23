@@ -1,0 +1,9 @@
+{
+  "name": "mx-console-focus",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pomodoro-style focus timer on the MX Creative Console with macOS Do Not Disturb toggling.",
+  "scripts": { "start": "node focus.js", "preview": "node focus.js --preview", "setup-dnd": "bash setup-dnd-shortcuts.sh" },
+  "dependencies": { "@logitech-mx-creative-console/node": "^0.2.3", "sharp": "^0.33.5" }
+}

@@ -1,0 +1,31 @@
+# --- dependencies ---
+node_modules/
+
+# --- logs & runtime data ---
+*.log
+.mxconsole/
+
+# --- rendered previews / generated images ---
+# (apps write preview PNGs next to their source)
+*.png
+# ...but keep committed image assets (launcher/assets/*.png, etc.)
+!**/assets/**
+
+# --- downloaded media ---
+downloads/
+
+# --- Swift companion build artifacts ---
+.build/
+.swiftpm/
+*.xcuserstate
+xcuserdata/
+# packaged app bundle (built by companion/bundle.sh)
+*.app
+
+# --- macOS ---
+.DS_Store
+
+# --- editors ---
+.vscode/
+.idea/
+*.swp

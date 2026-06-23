@@ -1,0 +1,22 @@
+{
+  "name": "mx-console-suite",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Custom apps and a launcher for the Logitech MX Creative Console (macOS).",
+  "license": "MIT",
+  "workspaces": [
+    "launcher",
+    "spotify-player",
+    "claude-usage",
+    "vitals",
+    "focus"
+  ],
+  "scripts": {
+    "start": "node launcher/launcher.js",
+    "preview": "node launcher/launcher.js --preview"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
