@@ -27,6 +27,7 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$RES/runtime" "$RES/suite"
 cp .build/release/MXConsoleCompanion "$APP/Contents/MacOS/MXConsoleCompanion"
 cp Info.plist "$APP/Contents/Info.plist"
+cp icon/AppIcon.icns "$RES/AppIcon.icns"
 
 echo "==> fetching Node $NODE_VER (darwin-$NARCH)"
 TMP="$(mktemp -d)"

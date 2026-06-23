@@ -10,6 +10,8 @@
 	<string>com.mxconsole.companion</string>
 	<key>CFBundleExecutable</key>
 	<string>MXConsoleCompanion</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

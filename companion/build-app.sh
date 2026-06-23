@@ -12,6 +12,7 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/MXConsoleCompanion"
 cp Info.plist "$APP/Contents/Info.plist"
+cp icon/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
 # ad-hoc codesign so login-item registration works locally
 codesign --force --deep --sign - "$APP" 2>/dev/null || echo "note: codesign skipped"
