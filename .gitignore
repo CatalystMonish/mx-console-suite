@@ -19,8 +19,9 @@ downloads/
 .swiftpm/
 *.xcuserstate
 xcuserdata/
-# packaged app bundle (built by companion/bundle.sh)
+# packaged app bundle (built by companion/bundle.sh) — distributed via GitHub Releases
 *.app
+*.zip
 
 # --- macOS ---
 .DS_Store
