@@ -118,7 +118,15 @@ function tilesFor(state) {
 	}
 	const d = state.data
 	const fh = d.five_hour || {}, sd = d.seven_day || {}
-	const sonnet = d.seven_day_sonnet?.utilization, opus = d.seven_day_opus?.utilization
+	// per-model weekly meters: new `limits[]` weekly_scoped entries (e.g. Fable),
+	// falling back to the legacy seven_day_sonnet/seven_day_opus fields
+	const models = (d.limits || [])
+		.filter((l) => l.kind === 'weekly_scoped' && l.scope?.model)
+		.map((l) => ({ name: (l.scope.model.display_name || 'MODEL').toUpperCase(), pct: l.percent, resets: l.resets_at }))
+	if (d.seven_day_sonnet?.utilization != null) models.push({ name: 'SONNET', pct: d.seven_day_sonnet.utilization, resets: d.seven_day_sonnet.resets_at })
+	if (d.seven_day_opus?.utilization != null) models.push({ name: 'OPUS', pct: d.seven_day_opus.utilization, resets: d.seven_day_opus.resets_at })
+	models.sort((a, b) => (b.name === 'FABLE' ? 1 : 0) - (a.name === 'FABLE' ? 1 : 0))
+	const m0 = models[0]
 	const sp = d.spend || {}
 	const used = sp.used ? sp.used.amount_minor / Math.pow(10, sp.used.exponent || 2) : 0
 	const limit = sp.limit ? sp.limit.amount_minor / Math.pow(10, sp.limit.exponent || 2) : 0
@@ -130,8 +138,8 @@ function tilesFor(state) {
 			case 3: return labelTile(S, 'WEEKLY', '7-day')
 			case 4: return gaugeTile(S, sd.utilization)
 			case 5: return labelTile(S, fmtReset(sd.resets_at), 'resets', sevColor(clamp(sd.utilization)))
-			case 6: return statTile(S, sonnet == null ? '—' : `${Math.round(sonnet)}%`, 'SONNET', sonnet == null ? '#6a6f85' : sevColor(clamp(sonnet)))
-			case 7: return statTile(S, opus == null ? '—' : `${Math.round(opus)}%`, 'OPUS', opus == null ? '#6a6f85' : sevColor(clamp(opus)))
+			case 6: return m0 ? labelTile(S, m0.name, `${fmtReset(m0.resets)} · resets`, sevColor(clamp(m0.pct))) : labelTile(S, 'MODEL', 'no data')
+			case 7: return m0 ? gaugeTile(S, m0.pct) : blank(S)
 			case 8: return statTile(S, limit ? `$${used.toFixed(0)}` : '—', limit ? `of $${limit.toFixed(0)}` : 'CREDITS', '#b39cff')
 			default: return blank(S)
 		}
