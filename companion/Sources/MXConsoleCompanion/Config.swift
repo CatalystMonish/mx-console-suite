@@ -41,5 +41,7 @@ enum Config {
 		try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
 		let data = try JSONSerialization.data(withJSONObject: root, options: [.prettyPrinted, .sortedKeys])
 		try data.write(to: path, options: .atomic)
+		// the file holds an OAuth token: owner read/write only
+		try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: path.path)
 	}
 }

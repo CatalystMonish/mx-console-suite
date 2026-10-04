@@ -8,9 +8,9 @@
 //   node launcher.js --preview  -> write launcher-preview.png (no hardware)
 //
 // Screen layout (3x3 LCD grid, indices 0-8):
-//   [ blank   ] [ TIME    ] [ DATE    ]
+//   [ WEATHER ] [ TIME    ] [ DATE    ]
 //   [ < + >   ] [ MX CONSOLE] [ FOCUS  ]
-//   [ VITALS  ] [ CLAUDE   ] [ SPOTIFY ]
+//   [ VITALS  ] [ SPOTIFY  ] [ CLAUDE  ]
 //
 import sharp from 'sharp'
 import { spawn } from 'child_process'
@@ -30,7 +30,7 @@ let WEATHER_LOC = loadConfig().weather
 let weather = null // { temp: number, code: number }
 
 // App tiles. Each launches a child process with MX_LAUNCHER=1 so its back-combo
-// (< + >) is active. Keys: FOCUS=5, VITALS=6, CLAUDE=7, SPOTIFY=8.
+// (< + >) is active. Keys: FOCUS=5, VITALS=6, SPOTIFY=7, CLAUDE=8.
 // Tiles with `icon` render the PNG (from launcher/assets) centered above the
 // label on a solid `bg`; the rest fall back to a drawn `glyph` + gradient.
 const APPS = [
@@ -216,7 +216,7 @@ async function tileFor(index, S) {
 function lcdKeys() {
 	return device.CONTROLS.filter((c) => c.type === 'button' && c.feedbackType === 'lcd')
 }
-// Keys 1 (clock) and 2 (date) are re-rendered every frame; the rest are static
+// Keys 0 (weather), 1 (clock) and 2 (date) are re-rendered every frame; the rest are static
 // and cached so we only build their buffers once.
 const isDynamic = (idx) => idx === 0 || idx === 1 || idx === 2
 let staticCache = null // index -> RGB Buffer

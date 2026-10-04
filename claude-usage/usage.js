@@ -117,22 +117,28 @@ function tilesFor(state) {
 		return (S, i) => (i === 4 ? labelTile(S, 'CLAUDE', state.error, '#f0506e') : i === 7 ? labelTile(S, '', state.error === 'RE-AUTH' ? 'open Claude Code' : '', '#6a6f85') : blank(S))
 	}
 	const d = state.data
-	const fh = d.five_hour || {}, sd = d.seven_day || {}
-	// per-model weekly meters: new `limits[]` weekly_scoped entries (e.g. Fable),
-	// falling back to the legacy seven_day_sonnet/seven_day_opus fields
-	const models = (d.limits || [])
+	// `limits[]` is the current shape (session / weekly_all / weekly_scoped);
+	// five_hour / seven_day are the legacy fields, kept as a fallback
+	const limits = d.limits || []
+	const fromLimit = (kind) => { const l = limits.find((x) => x.kind === kind); return l && { utilization: l.percent, resets_at: l.resets_at } }
+	const fh = fromLimit('session') || d.five_hour || {}, sd = fromLimit('weekly_all') || d.seven_day || {}
+	// per-model weekly meters: weekly_scoped entries (e.g. Fable), plus the legacy
+	// seven_day_sonnet/seven_day_opus fields (null on current accounts)
+	const models = limits
 		.filter((l) => l.kind === 'weekly_scoped' && l.scope?.model)
 		.map((l) => ({ name: (l.scope.model.display_name || 'MODEL').toUpperCase(), pct: l.percent, resets: l.resets_at }))
-	if (d.seven_day_sonnet?.utilization != null) models.push({ name: 'SONNET', pct: d.seven_day_sonnet.utilization, resets: d.seven_day_sonnet.resets_at })
-	if (d.seven_day_opus?.utilization != null) models.push({ name: 'OPUS', pct: d.seven_day_opus.utilization, resets: d.seven_day_opus.resets_at })
+	const legacy = { SONNET: d.seven_day_sonnet, OPUS: d.seven_day_opus }
+	for (const [name, w] of Object.entries(legacy)) if (w?.utilization != null && !models.some((m) => m.name === name)) models.push({ name, pct: w.utilization, resets: w.resets_at })
 	models.sort((a, b) => (b.name === 'FABLE' ? 1 : 0) - (a.name === 'FABLE' ? 1 : 0))
 	const m0 = models[0]
 	const sp = d.spend || {}
-	const used = sp.used ? sp.used.amount_minor / Math.pow(10, sp.used.exponent || 2) : 0
-	const limit = sp.limit ? sp.limit.amount_minor / Math.pow(10, sp.limit.exponent || 2) : 0
+	const creditsOn = sp.enabled !== false
+	const used = sp.used ? sp.used.amount_minor / Math.pow(10, sp.used.exponent ?? 2) : 0
+	const limit = sp.limit ? sp.limit.amount_minor / Math.pow(10, sp.limit.exponent ?? 2) : 0
 	return (S, i) => {
 		switch (i) {
-			case 0: return labelTile(S, 'SESSION', '5-hour')
+			// on a failed refresh the last good data stays up; flag it here
+			case 0: return state.staleError ? labelTile(S, 'SESSION', state.staleError, '#f0506e') : labelTile(S, 'SESSION', '5-hour')
 			case 1: return gaugeTile(S, fh.utilization)
 			case 2: return labelTile(S, fmtReset(fh.resets_at), 'resets', sevColor(clamp(fh.utilization)))
 			case 3: return labelTile(S, 'WEEKLY', '7-day')
@@ -140,7 +146,9 @@ function tilesFor(state) {
 			case 5: return labelTile(S, fmtReset(sd.resets_at), 'resets', sevColor(clamp(sd.utilization)))
 			case 6: return m0 ? labelTile(S, m0.name, `${fmtReset(m0.resets)} · resets`, sevColor(clamp(m0.pct))) : labelTile(S, 'MODEL', 'no data')
 			case 7: return m0 ? gaugeTile(S, m0.pct) : blank(S)
-			case 8: return statTile(S, limit ? `$${used.toFixed(0)}` : '—', limit ? `of $${limit.toFixed(0)}` : 'CREDITS', '#b39cff')
+			case 8:
+				if (!creditsOn) return statTile(S, 'OFF', 'CREDITS', '#6a6f85')
+				return statTile(S, limit ? `$${used.toFixed(0)}` : '—', limit ? `of $${limit.toFixed(0)}` : 'CREDITS', '#b39cff')
 			default: return blank(S)
 		}
 	}

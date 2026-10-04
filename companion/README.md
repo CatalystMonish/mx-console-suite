@@ -3,10 +3,16 @@
 A native SwiftUI menubar app that runs the console suite and holds its settings.
 It writes `~/.mxconsole/config.json`, which every console app reads.
 
-## What it does (v1)
+## What it does
 
+- **Claude usage meter** — polls the same usage endpoint as the console's Claude
+  tile (every 60 s, and when you open the popup). The popup lists every stat as a
+  colored meter with its reset countdown; the checkbox on each row pins it to the
+  menubar next to ▦. The **Menu bar** picker sets the style: Text, Color, Meter,
+  or Meter+%. Pins and style are stored in UserDefaults. A `!` in the menubar
+  means the last refresh failed (hover the item for details).
 - **Settings UI** — weather location (with city lookup → lat/lon via Open-Meteo)
-  and your Claude OAuth token. Saved to `~/.mxconsole/config.json`.
+  and your Claude OAuth token. Saved to `~/.mxconsole/config.json` (mode `0600`).
 - **Start / Stop launcher** — spawns `node <suite>/launcher/launcher.js` and
   terminates it cleanly (SIGTERM → the launcher clears the panel and exits).
 - **Launch at login** — registers the app as a macOS login item (`SMAppService`).
@@ -58,6 +64,18 @@ needs Node on the machine).
 | Claude OAuth token | `claude.oauthToken` | Paste your subscription OAuth token (`sk-ant-oat01-…`). Powers the real usage meter. |
 | Use Keychain instead | `claude.useKeychain` | Opt-in fallback: read the Claude Code token from the macOS Keychain instead of pasting one. |
 | Suite folder | UserDefaults (companion only) | Path to this repo, so it can find `launcher/launcher.js`. |
+
+## Source layout
+
+| File | Role |
+|------|------|
+| `App.swift` | App entry + delegate; creates the status item. |
+| `StatusItemController.swift` | ▦ `NSStatusItem` + popover hosting `MenuContent`. |
+| `MenuBarRenderer.swift` | Draws pinned stats in the chosen style. |
+| `MenuContent.swift` | The popup: launcher controls, Claude usage, settings. |
+| `ClaudeUsage.swift` | Token lookup, fetch, and parsing of the usage endpoint. |
+| `UsageStore.swift` | Polling, pinned stats, menubar style. |
+| `AppState.swift` / `Config.swift` | Settings + launcher process. |
 
 ## Notes
 

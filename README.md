@@ -155,10 +155,13 @@ Shows your **real** Claude subscription usage — the same numbers as claude.ai 
 the Claude Code `/usage` command — via `GET api.anthropic.com/api/oauth/usage`.
 
 - 5-hour session gauge + weekly gauge (green → amber → red), reset countdowns,
-  per-model weekly, and extra-usage credits.
+  per-model weekly (e.g. Fable), and extra-usage credits (`OFF` when disabled).
 - **Auth:** `config.claude.oauthToken` (set in the companion), or opt-in
   `useKeychain: true` to read the Claude Code token from the macOS Keychain.
-- On an expired token the tile shows `RE-AUTH` — paste a fresh one.
+- On an expired token the tile shows `RE-AUTH` — paste a fresh one. If a refresh
+  fails after data has loaded, the last numbers stay up and the SESSION tile
+  shows the error (`OFFLINE`, `RE-AUTH`, …) in red.
+- The same numbers are also in the **companion's menubar** — see below.
 
 > ⚠️ The usage endpoint is **undocumented/beta** (`anthropic-beta: oauth-2025-04-20`)
 > and may change without notice. It is **not** `ccusage` (which only estimates from
@@ -168,10 +171,17 @@ the Claude Code `/usage` command — via `GET api.anthropic.com/api/oauth/usage`
 
 ## Companion app
 
-Native SwiftUI **menubar** app (`companion/`). v1:
+Native SwiftUI **menubar** app (`companion/`):
 
+- **Claude usage in the menubar** — the popup shows every stat the console tile
+  does (session, weekly, per-model weekly, extra credits) as colored meters with
+  reset countdowns, plus this week's split by surface (Claude Code / Chats / …).
+  Tick a stat's checkbox to **pin it next to the ▦ icon**; pin as many as you like.
+  Pick how pinned stats are drawn: **Text** (`5h 0% · 7d 60%`), **Color** (values
+  in green/amber/red), **Meter** (mini colored bars), or **Meter+%**. Refreshes
+  every 60 s; on a failed refresh the last numbers stay and a `!` appears.
 - **Settings UI** — weather city (with **Find** → geocodes to lat/lon), Claude
-  OAuth token, suite folder. Writes `~/.mxconsole/config.json`.
+  OAuth token, suite folder. Writes `~/.mxconsole/config.json` (owner-only, `0600`).
 - **Start / Stop launcher** — spawns/terminates the launcher cleanly.
 - **Launch at login** — registers a login item (`SMAppService`).
 
