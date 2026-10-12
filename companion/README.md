@@ -64,11 +64,29 @@ package (`@img/sharp-darwin-<arch>`). node-hid and jpeg-turbo already ship
 prebuilds for both arches. Each build overwrites `MXConsoleCompanion.app`, so zip
 or copy it before building the next arch.
 
-### Caveats for shipping to other Macs
+### Signing & notarization
 
-- **Gatekeeper:** the bundle is ad-hoc signed, so other users must right-click →
-  Open (or `xattr -dr com.apple.quarantine MXConsoleCompanion.app`). For a clean
-  install experience, sign with a Developer ID and notarize.
+With a **Developer ID Application** certificate in your keychain, `bundle.sh` signs
+everything in the bundle with it (hardened runtime): native addons, then the Node
+runtime (`node.entitlements`), then the app (`app.entitlements`). With `ZIP=1` it
+also **notarizes** the app with Apple and staples the ticket, so the release zip
+opens on any Mac with no Gatekeeper prompt.
+
+One-time notary setup (Terminal; it prompts for an app-specific password):
+
+```bash
+xcrun notarytool store-credentials glidepage-notary --apple-id <you@example.com> --team-id <TEAMID>
+```
+
+| Variable | Effect |
+|----------|--------|
+| `SIGN_IDENTITY` | Cert name or SHA-1 (default: first Developer ID Application cert). `-` forces ad-hoc. |
+| `NOTARIZE` | `1`/`0` to force/skip notarization (default: on with `ZIP=1`). |
+| `NOTARY_PROFILE` | notarytool keychain profile (default `glidepage-notary`). |
+
+Without a Developer ID cert the bundle is **ad-hoc** signed: it runs on the Mac
+that built it, and other users must right-click → Open (or
+`xattr -dr com.apple.quarantine MXConsoleCompanion.app`).
 
 ## Settings
 

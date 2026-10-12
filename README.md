@@ -271,7 +271,7 @@ mx-console-suite/
 | **Claude tile = `NO TOKEN` / `RE-AUTH`** | Paste a fresh OAuth token in the companion (or enable *Use Keychain*). |
 | **Spotify tile blank** | Open the desktop Spotify app and approve the Automation prompt. |
 | **Focus DND not toggling** | Create the `MX Focus On` / `MX Focus Off` Shortcuts. |
-| **Gatekeeper blocks the .app** | `xattr -dr com.apple.quarantine MXConsoleCompanion.app`, or right-click → **Open**. |
+| **Gatekeeper blocks the .app** | Release downloads are signed + notarized. For a self-built (ad-hoc) app: `xattr -dr com.apple.quarantine MXConsoleCompanion.app`, or right-click → **Open**. |
 
 ---
 

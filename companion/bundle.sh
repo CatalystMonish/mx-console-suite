@@ -11,6 +11,14 @@
 #   ARCH=universal ./bundle.sh    # both in one .app (~2x size: two Node runtimes)
 # ZIP=1 also writes MXConsoleCompanion-macos-<arch>.zip (for a GitHub release).
 # Node version: NODE_VER=v22.20.0 ./bundle.sh
+#
+# Signing: with a "Developer ID Application" cert in the keychain the app is signed
+# with it (hardened runtime); otherwise ad-hoc (runs only on the Mac that built it
+# without a Gatekeeper prompt). SIGN_IDENTITY=<name or SHA-1> picks a cert,
+# SIGN_IDENTITY=- forces ad-hoc. Release zips (ZIP=1) are also notarized and
+# stapled (NOTARIZE=0 skips, NOTARIZE=1 forces) using the notarytool keychain
+# profile NOTARY_PROFILE (default glidepage-notary). One-time setup:
+#   xcrun notarytool store-credentials <profile> --apple-id <you@example.com> --team-id <TEAMID>
 set -euo pipefail
 cd "$(dirname "$0")"
 SUITE_ROOT="$(cd .. && pwd)"
@@ -31,6 +39,14 @@ case "$ARCH" in
 esac
 SWIFT_FLAGS=(-c release)
 for a in "${NARCHS[@]}"; do SWIFT_FLAGS+=(--arch "${a/x64/x86_64}"); done
+# by SHA-1, since a renewed cert has the same name as the old one
+IDENTITY="${SIGN_IDENTITY:-$(security find-identity -v -p codesigning | awk '/"Developer ID Application: / { print $2; exit }')}"
+[ "$IDENTITY" = - ] && IDENTITY=
+NOTARIZE="${NOTARIZE:-${ZIP:-0}}"
+NOTARY_PROFILE="${NOTARY_PROFILE:-glidepage-notary}"
+if [ "$NOTARIZE" = 1 ] && [ -z "$IDENTITY" ]; then
+	echo "notarizing needs a Developer ID Application cert (or run with NOTARIZE=0)"; exit 1
+fi
 
 APP="MXConsoleCompanion.app"
 RES="$APP/Contents/Resources"
@@ -54,7 +70,11 @@ for a in "${NARCHS[@]}"; do
 	curl -fsSL "https://nodejs.org/dist/$NODE_VER/node-$NODE_VER-darwin-$a.tar.gz" | tar xz -C "$TMP"
 	NODES+=("$TMP/node-$NODE_VER-darwin-$a/bin/node")
 done
-lipo -create "${NODES[@]}" -output "$RES/runtime/node"
+if [ ${#NODES[@]} -gt 1 ]; then
+	lipo -create "${NODES[@]}" -output "$RES/runtime/node"
+else
+	cp "${NODES[0]}" "$RES/runtime/node"
+fi
 chmod +x "$RES/runtime/node"
 
 echo "==> installing suite deps"
@@ -81,9 +101,41 @@ for a in "${NARCHS[@]}"; do
 		tar xzf "$TMP/img-$pkg-$ver.tgz" -C "$IMG/$pkg" --strip-components 1
 	done
 done
+# Linux/Windows (and other-arch) prebuilds never load here; drop them.
+KEEP=()
+for a in "${NARCHS[@]}"; do KEEP+=(! -name "*-darwin-$a"); done
+find "$RES/suite/node_modules" -type d -path '*/prebuilds/*' ! -path '*/prebuilds/*/*' "${KEEP[@]}" -prune -exec rm -rf {} +
 
-echo "==> ad-hoc signing (deep)"
-codesign --force --deep --sign - "$APP" 2>/dev/null || echo "note: codesign skipped"
+if [ -z "$IDENTITY" ]; then
+	echo "==> ad-hoc signing (deep; no Developer ID cert)"
+	codesign --force --deep --sign - "$APP" 2>/dev/null || echo "note: codesign skipped"
+else
+	echo "==> signing with $(security find-identity -v -p codesigning | grep -m1 -F "$IDENTITY" | sed 's/.*"\(.*\)"/\1/')"
+	sign() { codesign --force --timestamp --options runtime --sign "$IDENTITY" "$@"; }
+	# inside out: native addons + libvips, then node, then the app (which seals the rest)
+	find "$RES/suite" -type f -print0 | xargs -0 file -N | grep Mach-O | grep -v ' (for architecture ' | sed 's/: .*//' | while IFS= read -r f; do
+		sign "$f" 2>/dev/null || sign "$f"
+	done
+	sign --entitlements node.entitlements "$RES/runtime/node"
+	sign --entitlements app.entitlements "$APP"
+	codesign --verify --deep --strict "$APP"
+
+	if [ "$NOTARIZE" = 1 ]; then
+		echo "==> notarizing (a few minutes)"
+		ditto -c -k --keepParent "$APP" "$TMP/notarize.zip"
+		if ! out="$(xcrun notarytool submit "$TMP/notarize.zip" --keychain-profile "$NOTARY_PROFILE" --wait 2>&1)"; then
+			echo "$out"; exit 1
+		fi
+		echo "$out" | grep -E "^ *(id|status):" | tail -2
+		if ! echo "$out" | grep -q "status: Accepted"; then
+			xcrun notarytool log "$(echo "$out" | sed -n 's/^ *id: //p' | head -1)" --keychain-profile "$NOTARY_PROFILE" || true
+			exit 1
+		fi
+		# stapling lets the first launch work offline; without it Gatekeeper checks online
+		xcrun stapler staple -q "$APP" || echo "note: couldn't staple; Gatekeeper will verify the ticket online"
+		spctl --assess --type execute -vv "$APP" 2>&1 | sed 's/^/  /'
+	fi
+fi
 
 if [ "${ZIP:-}" = 1 ]; then
 	ZIPFILE="MXConsoleCompanion-macos-$ARCH.zip"
