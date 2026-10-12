@@ -47,11 +47,25 @@ things the apps shell out to are macOS built-ins (`osascript`, `afplay`,
 `build-app.sh` is the lightweight variant (companion only, no bundled runtime —
 needs Node on the machine).
 
+### Apple Silicon, Intel, or both
+
+`bundle.sh` builds for the host arch by default. Set `ARCH` to target another one
+(cross-building works from either kind of Mac):
+
+```bash
+ARCH=arm64 ./bundle.sh        # Apple Silicon (M-series)
+ARCH=x64 ./bundle.sh          # Intel
+ARCH=universal ./bundle.sh    # one .app for both (~2x size: carries two Node runtimes)
+ARCH=x64 ZIP=1 ./bundle.sh    # also writes MXConsoleCompanion-macos-x64.zip for a release
+```
+
+`ARCH` picks the arch of the companion binary, the bundled Node, and sharp's native
+package (`@img/sharp-darwin-<arch>`). node-hid and jpeg-turbo already ship
+prebuilds for both arches. Each build overwrites `MXConsoleCompanion.app`, so zip
+or copy it before building the next arch.
+
 ### Caveats for shipping to other Macs
 
-- **Arch:** `bundle.sh` builds for the host arch (arm64 on Apple Silicon → all
-  M-series Macs). For Intel too, build a universal companion and lipo a universal
-  node, and add sharp's x64 binaries (`@img/sharp-darwin-x64`).
 - **Gatekeeper:** the bundle is ad-hoc signed, so other users must right-click →
   Open (or `xattr -dr com.apple.quarantine MXConsoleCompanion.app`). For a clean
   install experience, sign with a Developer ID and notarize.

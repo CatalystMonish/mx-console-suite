@@ -77,6 +77,10 @@ cd companion
 open MXConsoleCompanion.app
 ```
 
+Builds for your Mac's arch. For another Mac, use `ARCH=x64` (Intel), `ARCH=arm64`
+(Apple Silicon) or `ARCH=universal` — see
+[`companion/README.md`](./companion/README.md#apple-silicon-intel-or-both).
+
 A **▦ icon appears in the menubar** (no Dock icon). Click it → set your options →
 **Start Launcher**. See [Companion app](#companion-app).
 
@@ -191,6 +195,7 @@ Build options:
 cd companion
 swift run            # dev run (uses your system node + the suite folder)
 ./bundle.sh          # SELF-CONTAINED .app: bundles Node + suite (runs on any Mac)
+ARCH=x64 ./bundle.sh # same, for Intel Macs (also: arm64, universal)
 ./build-app.sh       # lightweight .app: companion only (needs Node on the machine)
 ```
 
